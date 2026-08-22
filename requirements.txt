@@ -3,3 +3,5 @@ livekit-plugins-groq>=0.10.0
 livekit-plugins-ai-coustics>=0.3.0
 python-dotenv>=1.0.0
 livekit-plugins-silero>=0.7.0
+openai-Async
+livekit-plugins-deepgram
