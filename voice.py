@@ -33,6 +33,7 @@ async def AtlerEgo(ctx: agents.JobContext):
             model="openai/gpt-oss-20b",
             client=groq_client,
             temperature=0.0,
+            extra_body={"reasoning_format": "hidden"},
         ),
         
         tts=inference.TTS(
