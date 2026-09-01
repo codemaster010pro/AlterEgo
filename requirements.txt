@@ -7,3 +7,4 @@ openai-Async
 livekit-plugins-deepgram
 langchain
 langgraph
+docker
