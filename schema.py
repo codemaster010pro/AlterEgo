@@ -13,8 +13,9 @@ class AlterEgo(TypedDict):
     tts_text:Optional[str]
     stt_text:Optional[str]
     
-    
 class route(BaseModel):
     route: Literal["software","mentor","upgrade"] = Field(description="Target destination engine for the query.")
     reason:str = Field(description="very short(1 sentence) explaination of how this path was best for this and selected.")
     
+class orchestration(BaseModel):
+    tasks: list[str] = Field(description="List of tasks to be executed.")

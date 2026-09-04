@@ -8,3 +8,4 @@ livekit-plugins-deepgram
 langchain
 langgraph
 docker
+langchain-groq
