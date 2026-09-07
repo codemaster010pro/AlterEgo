@@ -67,10 +67,3 @@ def node_3b(state: AlterEgo):
     
     return {"messages": [AIMessage(content=response.content)],
             "tts_text": response.content}
-     
-     
-     
-    
-
-
-    
