@@ -12,6 +12,7 @@ class AlterEgo(TypedDict):
     next_node:Optional[str]
     tts_text:Optional[str]
     stt_text:Optional[str]
+    retry_count:Optional[int]
     
 class route(BaseModel):
     route: Literal["software","mentor","upgrade"] = Field(description="Target destination engine for the query.")
