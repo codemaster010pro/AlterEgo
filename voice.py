@@ -1,9 +1,10 @@
 from dotenv import load_dotenv
 from livekit import agents
 from livekit.agents import AgentServer, AgentSession, Agent, inference, room_io, TurnHandlingOptions
-from livekit.plugins import ai_coustics,openai,deepgram
+from livekit.plugins import ai_coustics,openai,deepgram,silero
 from openai import AsyncOpenAI
 import os
+import asyncio
 
 load_dotenv()
 
@@ -22,12 +23,13 @@ async def AtlerEgo(ctx: agents.JobContext):
     )
     
     assistant = AgentSession(
+        vad = silero.VAD.load(),
         stt=deepgram.STT(
             model="nova-3",
             language="en",
             interim_results=True,
             smart_format=False,  
-            endpointing_ms=25),
+            endpointing_ms=300),
                
         llm=openai.LLM(
             model="openai/gpt-oss-20b",
@@ -45,8 +47,8 @@ async def AtlerEgo(ctx: agents.JobContext):
             turn_detection="vad",
             endpointing={
                 "mode": "fixed",
-                "min_delay": 0.05,
-                "max_delay": 0.15,
+                "min_delay": 0.3,
+                "max_delay": 1.0,
             },
             preemptive_generation={
                 "enabled": True,
@@ -54,7 +56,27 @@ async def AtlerEgo(ctx: agents.JobContext):
             },
         ),
     )
-
+    @assistant.on("conversation_item_added")
+    
+    def on_conversation_item(event):
+        if getattr(event.item, "role", None) == "assistant" and getattr(event.item, "text_content", None):
+            text = event.item.text_content.strip()
+            asyncio.create_task(
+                ctx.room.local_participant.publish_data(
+                    text.encode("utf-8"),
+                    reliable=True,
+                    topic="hud_text"
+                )
+            )
+            
+    @assistant.on("user_input_transcribed")
+    def on_transcript(ev):
+        print(f"[STT] final={ev.is_final} text={ev.transcript!r}")
+            
+    @assistant.on("user_state_changed")
+    def on_user_state(ev):
+        print(f"[VAD] {ev.old_state} -> {ev.new_state}")
+    
     await assistant.start(
         room=ctx.room,
         agent=Assistant(),

@@ -43,7 +43,7 @@ def llm_call_router(state: AlterEgo):
             "tool_output": []}
 
 def node_3b(state: AlterEgo):
-    current_preferences = state["preferences",{}]
+    current_preferences = state.get("preferences", {})
     
     system_prompt = """You are the Strategic Mentor module for Edith.
                     Your goal is to guide the user through complex problem-solving using first principles, crisp mental models, and Socratic questioning.
