@@ -1,13 +1,14 @@
 from schema import route, AlterEgo
 from langchain.messages import SystemMessage, HumanMessage, AIMessage
 from model import llm
+from custom_def import opencoder_worker_node
+from langgraph.graph import END
 
 router = llm.with_structured_output(route)
 
 def llm_call_router(state: AlterEgo):
     """Route the input to the appropriate node"""
-
-    # Run the augmented LLM with structured output to serve as routing logic
+      
     next_node = router.invoke(
         [
             SystemMessage(
@@ -42,7 +43,7 @@ def llm_call_router(state: AlterEgo):
     return {"next_node": next_node.route,
             "tool_output": []}
 
-def node_3b(state: AlterEgo):
+def mentor_node(state: AlterEgo):
     current_preferences = state.get("preferences", {})
     
     system_prompt = """You are the Strategic Mentor module for Edith.
@@ -67,3 +68,33 @@ def node_3b(state: AlterEgo):
     
     return {"messages": [AIMessage(content=response.content)],
             "tts_text": response.content}
+    
+    
+def code_writer(state : AlterEgo):
+    tool_output = state.get("tool_output", [])
+    tasks: list[str] = []
+    
+    for item in tool_output:
+        if isinstance(item.get("tasks"),list):
+            tasks.extend(item["tasks"])
+            
+    if not tasks:
+        return {"tool_output": [{
+            "task_id": 0,
+            "status":"error",
+            "error":"no tasks is genrated by orchestrator."
+        }]} 
+        
+    results = opencoder_worker_node(tasks)
+    
+    return {"tool_output": results}
+
+def decider(state : AlterEgo):
+    next_node = state.get("next_node")
+    if next_node == "software":
+        return "software"
+    if next_node == "mentor":
+        return "mentor"
+    if next_node == "upgrade":
+        return "mentor"
+    return END
